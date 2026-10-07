@@ -7,10 +7,12 @@ def calculator(expression):
 
         # divede the expression in chuncks for avoind erros
         tokens = re.findall(r'\d+\.?\d*|[+\-*/()^sS!]', expression)
+        if not tokens:
+            return "empty expression or invalid characters"
         output_queue = []
         operator_stack = []
         eval_stack = []
-        erro =" "
+       
 
 
         # Return operator priority level
@@ -75,8 +77,7 @@ def calculator(expression):
 
             elif precedence_operation(current_token) != 0: 
 
-                while( operator_stack and precedence_operation(operator_stack[-1]) >= precedence_operation(current_token)):
-
+                while operator_stack: 
                     output_queue.append(operator_stack.pop())
 
                 operator_stack.append(current_token)
@@ -112,9 +113,11 @@ def calculator(expression):
         return answer
     
     except ValueError:
-        erro = "you use a invalide character"
-        return erro
+        return "you use a invalide character"
     
     except ZeroDivisionError:
-            erro = "it is imposible divide by zero"
-            return erro
+   
+            return "it is imposible divide by zero"
+    except IndexError:
+       
+            return "it is imposible acess a number that does not exist"
