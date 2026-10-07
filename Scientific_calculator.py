@@ -1,20 +1,38 @@
 import re
+import math
 expression = input("Write your mathematical expression: ")
 
 # divede the expression in chuncks for avoind erros
-tokens = re.findall(r'\d+\.?\d*|[+\-*/()]|[a-zA-Z]', expression)
+tokens = re.findall(r'\d+\.?\d*|[+\-*/()^sS]|', expression)
 output_queue = []
 operator_stack = []
+eval_stack = []
 
 
 # Return operator priority level
-def precedence_operation(token):
+def precedence_operation(current_token):
 
-    if token == "*" or token == "/": return 2
+    if current_token == "^"  or current_token.upper() == "S": return 3
 
-    elif token == "+" or token == "-": return 1
+    elif current_token == "*" or current_token == "/": return 2
+
+    elif current_token == "+" or current_token == "-": return 1
 
     else: return 0
+
+# Return operation answer
+def executing_operation(current_token, first_number, last_number):
+
+
+    if current_token == "^": return first_number ** last_number
+    elif current_token.upper() == "S": return sqrt(last_number) 
+    elif current_token == "*": return first_number * last_number
+    elif current_token == "/": return first_number / last_number
+    elif current_token == "-": return first_number - last_number
+    elif current_token == "+": return first_number + last_number
+
+    else: return 0
+
 
 
 for current_token in tokens:
@@ -49,7 +67,7 @@ for current_token in tokens:
 
     elif precedence_operation(current_token) != 0: 
 
-        while( operator_stack and precedence_operation(operator_stack[-1]) >= precedence_operation(token)):
+        while( operator_stack and precedence_operation(operator_stack[-1]) >= precedence_operation(current_token)):
 
             output_queue.append(operator_stack.pop())
 
@@ -61,4 +79,21 @@ while operator_stack:
 
     output_queue.append(operator_stack.pop())
 
-print(output_queue)
+
+for current_token in output_queue:
+    if current_token.replace('.', '', 1).isdigit():
+        eval_stack.append(float(current_token))
+
+# square root  needs one number to work
+    elif current_token.upper() == "S":
+        number = eval_stack.pop()
+        eval_stack.append(math.sqrt(number))
+
+    else:
+        last_number = eval_stack.pop()
+        first_number = eval_stack.pop()
+
+        eval_stack.append(executing_operation(current_token, first_number, last_number))
+
+answer = eval_stack[0]
+print(answer)
