@@ -1,14 +1,15 @@
 import re
 import math
+import decimal
 
 def calculator(expression):
-    try:
-        
-
+    
+    try:    
         # divede the expression in chuncks for avoind erros
         tokens = re.findall(r'\d+\.?\d*|[+\-*/()^sS!]', expression)
         if not tokens:
             return "empty expression or invalid characters"
+        
         output_queue = []
         operator_stack = []
         eval_stack = []
@@ -29,7 +30,11 @@ def calculator(expression):
             else: return 0
 
         # Return operation answer
-        def executing_operation(current_token, first_number, last_number):
+        def executing_operation(current_token, first_number, last_number=None):
+
+            if current_token == "!": return (math.factorial(int(first_number)))
+
+            if current_token.upper() == "S": return first_number ** decimal.Decimal(1/last_number)
 
             if current_token == "^": return first_number ** last_number
 
@@ -75,12 +80,13 @@ def calculator(expression):
         #operator verification 
 
 
-            elif precedence_operation(current_token) != 0: 
-
-                while operator_stack: 
-                    output_queue.append(operator_stack.pop())
-
-                operator_stack.append(current_token)
+            else:
+                # Correct operator precedence check
+                p = precedence_operation(current_token)
+                if p > 0:
+                    while (operator_stack and operator_stack[-1] != "(" and precedence_operation(operator_stack[-1]) >= p):
+                        output_queue.append(operator_stack.pop())
+                    operator_stack.append(current_token)
 
 
         # Move any remaining operators to the output
@@ -91,33 +97,35 @@ def calculator(expression):
         # add the numbers to eval_stack.
         for current_token in output_queue:
             if current_token.replace('.', '', 1).isdigit():
-                eval_stack.append(float(current_token))
+                eval_stack.append(decimal.Decimal(current_token))
 
-        # Square root and factorial only need one number to work, so it's not necessary to call the function.    
-            
-            elif current_token.upper() == "S":
-                number = eval_stack.pop()
-                eval_stack.append(math.sqrt(number))
-
-            elif current_token == "!":
-                number = eval_stack.pop()
-                eval_stack.append((math.factorial(int(number))))
 
             else:
-                last_number = eval_stack.pop()
-                first_number = eval_stack.pop()
 
-                eval_stack.append(executing_operation(current_token, first_number, last_number))
+
+                if current_token != "!":
+                    last_number = eval_stack.pop()
+                    first_number = eval_stack.pop()
+                    eval_stack.append(executing_operation(current_token, first_number, last_number))
+
+                else:
+                    number = eval_stack.pop()
+                    eval_stack.append(executing_operation(current_token, number))
+                
 
         answer = eval_stack[0]
+        
+        # Remove trailing decimals if it's a whole number
+        if answer % 1 == 0:
+            answer = int(answer)
+        else:
+            # Normalize to drop trailing zeros while keeping decimals if needed
+            answer = answer.normalize()
+            
         return answer
     
-    except ValueError:
-        return "you use a invalide character"
+    except ValueError: return "you use a invalide character"
     
-    except ZeroDivisionError:
-   
-            return "it is imposible divide by zero"
-    except IndexError:
-       
-            return "it is imposible acess a number that does not exist"
+    except ZeroDivisionError: return "it is imposible divide by zero"
+
+    except IndexError:   return "it is imposible acess a number that does not exist"
