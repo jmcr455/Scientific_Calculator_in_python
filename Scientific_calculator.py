@@ -126,6 +126,9 @@ def calculator(expression):
     
     except ValueError: return "you use a invalide character"
     
-    except ZeroDivisionError: return "it is imposible divide by zero"
-
-    except IndexError:   return "it is imposible acess a number that does not exist"
+    except ZeroDivisionError:
+   
+            return "it is imposible divide by zero"
+    except IndexError:
+       
+            return "it is imposible acess a number that does not exist"
